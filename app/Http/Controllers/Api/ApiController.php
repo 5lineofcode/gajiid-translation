@@ -3,7 +3,6 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\ApiResponseController;
-use App\Http\Controllers\Api\ApiBranchedController;
 use App\Http\Controllers\Api\ApiHelperController;
 
 use Input;
@@ -12,18 +11,7 @@ use File;
 
 class ApiController extends Controller
 {
-    public function before_hook($table_name) {
-        if(ApiBranchedController::needBranchedAuth($table_name)){
-            response()
-                ->json(ApiResponseController::branchedNeedAuthResponse())
-                ->send();
-            exit;
-        }
-    }
-
     public function hook_get_all($request, $table_name){
-        $this->before_hook($table_name);
-        
         $override_method = "OnGetAll";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -59,8 +47,6 @@ class ApiController extends Controller
         $query = DB::table($table_name)
                     ->where($where);
 
-        ApiBranchedController::useBranchedQuery($query,$table_name);
-
         $query = $query->orderBy($sort_field, $sort_order);
         $query = $query->limit($limit);
         $results = $query->paginate($limit);
@@ -77,8 +63,6 @@ class ApiController extends Controller
     }
 
     public function hook_table($request,$table_name){
-        $this->before_hook($table_name);
-        
         $override_method = "OnTable";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -107,43 +91,21 @@ class ApiController extends Controller
         $query = DB::table($table_name)
             ->where($where)
             ->orderBy($sort_field, $sort_order);
-        ApiBranchedController::useBranchedQuery($query,$table_name);
     
         $query = $page_count == 0 ? $query->paginate() : $query->paginate($page_count);
         return response()->json($query);
     }
 
     public function hook_custom($request,$table_name,$method){
-        $this->before_hook($table_name);
-        
         $override_method = $method;
         $primaryKey = null;
         
-        //! Filter
-        $where = ApiHelperController::getWhere();
+        $controllerMethod = ApiHelperController::callCustomMethod($table_name, $override_method, []);
 
-        $controllerMethod = ApiHelperController::callCustomMethod($table_name, $override_method, [
-            "where" => $where,
-            "primary_key" => $primaryKey,
-            "sort_field" => $sort_field,
-            "sort_order" => $sort_order,
-            "table_name" => $table_name,
-        ]);
-
-        if ($controllerMethod) {
-            ApiResponseController::updateEndpointVersion($table_name);
-            return $controllerMethod;
-        }
-
-        return response()->json([
-            "error" => true,
-            "message" => "This $controllerName@$method doesnt exists"
-        ]);
+        return $controllerMethod;
     }
 
     public function hook_delete($request,$table_name,$id = null){
-        $this->before_hook($table_name);
-        
         $override_method = "OnDelete";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -169,7 +131,6 @@ class ApiController extends Controller
 
         $query = DB::table($table_name)
                    ->where($primaryKey, $id);
-        ApiBranchedController::useBranchedQuery($query,$table_name);
 
         $is_success = $query->delete();
         
@@ -178,8 +139,6 @@ class ApiController extends Controller
     }
 
     public function hook_get_single_data($request,$table_name,$id) {
-        $this->before_hook($table_name);
-        
         $override_method = "OnGetSingleData";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -202,8 +161,6 @@ class ApiController extends Controller
         $query = DB::table($table_name)
             ->where($primaryKey, $id);
 
-        ApiBranchedController::useBranchedQuery($query,$table_name);
-
         $result = $query->first();
 
         if(count($result)==0){
@@ -216,8 +173,6 @@ class ApiController extends Controller
     }
 
     public function hook_create($request,$table_name){
-        $this->before_hook($table_name);
-        
         $override_method = "OnCreate";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -241,7 +196,6 @@ class ApiController extends Controller
         }
 
         $query = DB::table($table_name);
-        ApiBranchedController::useBranchedPostData($postdata,$table_name);
         $is_success = $query->insert($postdata);
 
         ApiResponseController::updateEndpointVersion($table_name);
@@ -249,8 +203,6 @@ class ApiController extends Controller
     }
 
     public function hook_update($request,$table_name){
-        $this->before_hook($table_name);
-        
         $override_method = "OnEdit";
         $primaryKey = ApiHelperController::getPrimaryKey($table_name);
         
@@ -286,8 +238,6 @@ class ApiController extends Controller
     }
 
     public function hook_upload($request,$table_name){
-        $this->before_hook($table_name);
-        
         $image = Input::get("base64_image");
         $image = str_replace('data:image/png;base64,', '', $image);
         $image = str_replace(' ', '+', $image);

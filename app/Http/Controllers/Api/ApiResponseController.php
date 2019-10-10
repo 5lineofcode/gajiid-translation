@@ -31,28 +31,5 @@ class ApiResponseController extends Controller
             "message" => "Delete Data Success"
         ];
     }
-
-    public static function branchedNeedAuthResponse(){
-        return [
-            "error" => true,
-            "error_code" => "BRANCHED_ENDPOINT",
-            "message" => "This endpoint need you to login first!"
-        ];
-    }
-
-    public static function updateEndpointVersion($endpoint){
-        $new_version = uniqid();
-        $company_id = Session::get("current_user")["company_id"];
-        $branch_id = Session::get("current_user")["branch"]["branch_id"];
-        
-        //TODO: Implement Branched
-        DB::delete("delete from  endpoint_version where endpoint='$endpoint'");
-        DB::table("endpoint_version")
-            ->insert([
-                "endpoint" => $endpoint,
-                "version" => $new_version,
-                "branch_id" => $branch_id,
-                "company_id" => $company_id,
-            ]);
-    }
+    
 }

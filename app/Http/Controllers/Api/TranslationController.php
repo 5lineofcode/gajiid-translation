@@ -10,10 +10,10 @@ use Session;
 use DB;
 use File;
 
-class BlankController extends Controller
+class TranslationController extends Controller
 {
-    public function test()
-    {
-        return DB::table("translation")->paginate(10);
-    }
+    // public function OnTable()
+    // {
+    //     return DB::table("translation")->paginate(10);
+    // }
 }

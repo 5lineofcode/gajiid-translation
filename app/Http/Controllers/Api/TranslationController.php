@@ -16,6 +16,23 @@ class TranslationController extends Controller
     {
         return DB::table("translation")->get();
     }
+
+    public function updateTranslation()
+    {
+        $items = Input::get("items");
+
+        DB::beginTransaction();
+        DB::table("translation")->delete();
+
+        DB::table("translation")->insert($items);
+
+        DB::commit();
+
+        return [
+            "message" => "Done",
+            "items" => $items
+        ];
+    }
 }
 
 

@@ -12,8 +12,10 @@ use File;
 
 class TranslationController extends Controller
 {
-    // public function OnTable()
-    // {
-    //     return DB::table("translation")->paginate(10);
-    // }
+    public function getTranslation()
+    {
+        return DB::table("translation")->get();
+    }
 }
+
+

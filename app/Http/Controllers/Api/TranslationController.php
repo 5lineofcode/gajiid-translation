@@ -58,6 +58,16 @@ class TranslationController extends Controller
     public function registerUndefinedWord(){
         $word = Input::get("word");
 
+        $current = DB::table("translation")
+                        ->where("indonesia",$word)
+                        ->get();
+
+        if(count($current)>0){
+            foreach($current as $c){
+                return response()->json($c);
+            }
+        }
+
         $item = [
             "string_code" => uniqid(),
             "indonesia" => $word,

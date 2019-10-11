@@ -2,10 +2,20 @@
 use Illuminate\Support\Facades\Input;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Google\Cloud\Translate\TranslateClient;
 
 Route::get('/', function () {
-    // return DB::table("translation")->paginate(10);
-    return "New Version!";
+    $translate = new TranslateClient([
+        // 'key' => 'your_key'
+        'keyFile' => json_decode(file_get_contents('google-services.json'), true)
+    ]);
+
+    // Translate text from english to french.
+    $result = $translate->translate('Hello world!', [
+        'target' => 'fr'
+    ]);
+
+    return $result['text'];
 });
 
 Route::group(["prefix" => "api"], function () {

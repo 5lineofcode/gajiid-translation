@@ -4,7 +4,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
-    return DB::table("translation")->paginate(10);
+    // return DB::table("translation")->paginate(10);
+    return "New Version!";
 });
 
 Route::group(["prefix" => "api"], function () {

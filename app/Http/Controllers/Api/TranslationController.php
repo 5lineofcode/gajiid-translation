@@ -30,7 +30,13 @@ class TranslationController extends Controller
 
         return [
             "message" => "Done",
-            "items" => $items
+        ];
+    }
+
+    public function emptyTranslation(){
+        DB::table("translation")->delete();
+        return [
+            "message" => "Done",
         ];
     }
 }

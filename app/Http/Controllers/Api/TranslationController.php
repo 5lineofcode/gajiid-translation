@@ -42,11 +42,9 @@ class TranslationController extends Controller
 
     public function getTranslate($word,$language_code){
         $translate = new TranslateClient([
-            // 'key' => 'your_key'
             'keyFile' => json_decode(file_get_contents(base_path('google-services.json')), true)
         ]);
     
-        // Translate text from english to french.
         $result = $translate->translate($word, [
             'source' => 'id',
             'target' => $language_code
